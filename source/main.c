@@ -155,6 +155,8 @@ int main(int argc, char** argv) {
     // for (int i = 0; i < sizeof(tst); i++)
     //   printf("%.2x", tst[i]);
 
+    printf("\n\nRunning...\n\n\n\n\n");
+
     s32 systemVersion = getSystemMenuVersion();
 
     if (systemVersion < 256) {
@@ -166,10 +168,15 @@ int main(int argc, char** argv) {
                    "installer will continue.\n");
         }
 
-        patchMail();
+        s32 error = patchMail();
+        if (error == RESPONSE_AREGISTERED) {
+          printf("If your previous registration failed, please\ncontact a developer at support@riiconnect24.net.\n");
+        } else if (error != 0) {
+          printf("An error occurred! Please send a screenshot of this error message\nto a developer or at support@riiconnect24.net.\n");
+        } else {
+          printf("Finished!\nPress HOME to exit.\n");
+        }
     }
-
-    printf("Finished!\nPress HOME to exit.\n");
 
     while (1) {
         WPAD_ScanPads();

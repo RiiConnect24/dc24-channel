@@ -86,6 +86,10 @@ void patchNWC24MSG(unionNWC24MSG* unionFile, char passwd[0x20], char mlchkid[0x2
     // Patch mail domain
     strcpy(unionFile->structNWC24MSG.mailDomain, BASE_MAIL_URL);
 
+    // Patch mlchkid and passwd
+    strcpy(unionFile->structNWC24MSG.passwd, passwd);
+    strcpy(unionFile->structNWC24MSG.mlchkid, mlchkid);
+
     // Patch the URLs
     const char engines[0x5][0x80] = { "account", "check", "receive", "delete", "send" };
     for (int i = 0; i < 5; i++) {
@@ -113,6 +117,12 @@ s32 patchMail() {
         printf("The nwc24msg.cfg file couldn't be read\n");
         return error;
     }
+
+    s32 copyingError = NAND_WriteFile("/shared2/wc24/nwc24msg.cbk", fileBufferNWC24MSG, 0x400, false);
+    if (copyingError < 0) {
+        printf("The nwc24msg.cfg file couldn't be backed up.\n");
+        return copyingError;
+    }
     memcpy(&fileUnionNWC24MSG, fileBufferNWC24MSG, 0x400);
 
     // Separate the file magic and checksum
@@ -138,7 +148,7 @@ s32 patchMail() {
 
     // Request for a passwd/mlchkid
     char response[2048] = "";
-    sprintf(response, "mlid=w%16lli", fc);
+    sprintf(response, "mlid=w%016lli", fc);
     error = postRequest(BASE_HTTP_URL, "/cgi-bin/patcher.cgi", 80, &response, sizeof(response));
     if (error < 0) {
         printf("Couldn't request the data: %li\n", error);
@@ -176,16 +186,20 @@ s32 patchMail() {
     switch (responseCode) {
     case RESPONSE_INVALID:
         printf("Invalid friend code\n");
+        return 1;
         break;
     case RESPONSE_AREGISTERED:
         printf("Already registered\n");
+        return RESPONSE_AREGISTERED;
         break;
     case RESPONSE_DB_ERROR:
         printf("Server database error.");
+        return 1;
         break;
     case RESPONSE_OK:
         if (strcmp(responseMlchkid, "") == 0 || strcmp(responsePasswd, "") == 0) {
             // If it's empty, nothing we can do.
+            return 1;
         } else {
             // Patch the nwc24msg.cfg file
             printf("before:%s\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
@@ -197,13 +211,14 @@ s32 patchMail() {
                 printf("The nwc24msg.cfg file couldn't be updated.\n");
                 return error;
             }
-
+            return 0;
             break;
         }
     default:
         printf("Incomplete data. Check if the server is up.\nFeel free to send a developer the "
                "following content: \n%s\n",
                response);
+        return 1;
         break;
     }
 
