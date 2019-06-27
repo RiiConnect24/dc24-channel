@@ -42,7 +42,7 @@ export OFILES_BIN	:= $(addsuffix .o,$(BINFILES))
 export OFILES_SOURCES 	:= $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
 export OFILES 		:= $(OFILES_BIN) $(OFILES_SOURCES)
 export HFILES 		:= $(addsuffix .h,$(subst .,_,$(BINFILES)))
-export INCLUDE		:= $(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) -$(CURDIR)/$(BUILD) -I$(LIBOGC_INC)
+export INCLUDE		:= $(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) -I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC)
 export LIBPATHS		:= $(foreach dir,$(LIBDIRS),-L$(dir)/lib) -L$(LIBOGC_LIB)
 export OUTPUT		:= $(CURDIR)/$(TARGET)
 #---------------------------------------------------------------------------------

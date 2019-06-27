@@ -182,8 +182,8 @@ s32 patchMail() {
     net_close(sock);    
 
     int responseCode = RESPONSE_NOTINIT;
-    char* responseMlchkid = "";
-    char* responsePasswd = "";
+    char responseMlchkid[255];
+    char  responsePasswd[255];
 
     sscanf(response, "cd:%d", &responseCode);
     sscanf(response, "mlchkid:%s", responseMlchkid);
