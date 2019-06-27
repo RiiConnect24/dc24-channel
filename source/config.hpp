@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#define VERSION "2.0.1"
+#define VERSION "2.0.2"
 #define CREDITS "Spotlight, Apfel"
 
 #define BASE_HTTP_URL "mtw.rc24.xyz"

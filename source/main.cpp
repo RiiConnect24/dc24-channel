@@ -37,23 +37,24 @@ int main(int argc, char** argv) {
 	char netmask[16] = {0};
 
 
-	cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << ".\nInitializing..." << endl;
-
-	if (if_config(localip, netmask, gateway, true, 20) >= 0) cout << "Connected to the Internet." << endl;
-	else {
-		cout << "An error occurred! We could not connect to the Internet.\nPress HOME to quit." << endl;
-
-		while (true) {
-			VIDEO_WaitVSync();
-			WPAD_ScanPads();
-			if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) exit(1);
-		}
-	}
+	cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << "." << endl;
 
 	s32 systemVersion = getSystemMenuVersion();
 	if (systemVersion < 512) cout << "Your System Menu is too outdated.\nPlease download the latest update (4.3)." << endl;
 	else if (systemVersion == 610) cout << "Wii Mail does not work on a WiiU." << endl;
 	else {
+		cout << "Connecting to the Internet..." << endl;
+		if (if_config(localip, netmask, gateway, true, 20) >= 0) cout << "Connected to the Internet." << endl;
+		else {
+			cout << "An error occurred! We could not connect to the Internet.\nPress HOME to quit." << endl;
+
+			while (true) {
+				VIDEO_WaitVSync();
+				WPAD_ScanPads();
+				if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) { NAND_Exit(); exit(1); }
+			}
+		}
+
 		cout << "Patching in progress..." << endl;
 
 		s32 error = patchMail();
