@@ -42,14 +42,23 @@ export INCLUDE		:= $(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) $(foreac
 export LIBPATHS		:= $(foreach dir,$(LIBDIRS),-L$(dir)/lib) -L$(LIBOGC_LIB)
 export OUTPUT		:= $(CURDIR)/$(TARGET)
 #---------------------------------------------------------------------------------
-.PHONY: $(BUILD) clean
+.PHONY: $(BUILD) clean release
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 #---------------------------------------------------------------------------------
 clean:
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol apps $(TARGET).zip
+#---------------------------------------------------------------------------------
+release: $(BUILD)
+	@mkdir -p $(CURDIR)/apps/mail-patch
+	@mv $(OUTPUT).elf $(CURDIR)/apps/mail-patch/boot.elf
+	@mv $(OUTPUT).dol $(CURDIR)/apps/mail-patch/boot.dol
+	@cp -R $(CURDIR)/release/icon.png $(CURDIR)/apps/mail-patch/
+	@cp -R $(CURDIR)/release/meta.xml $(CURDIR)/apps/mail-patch/
+	@zip -r $(TARGET).zip apps
+	@rm -rf apps
 #---------------------------------------------------------------------------------
 else
 
