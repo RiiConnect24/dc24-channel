@@ -51,15 +51,18 @@ int main(int argc, char** argv) {
 	}
 
 	s32 systemVersion = getSystemMenuVersion();
-	if (systemVersion < 256) cout << "Your System Menu is too outdated.\nPlease download the latest update." << endl;
-	else if (systemVersion >= 256 && systemVersion < 512) {
-		cout << "RiiConnect24 works best on 4.3.\nIn case you update, please repatch your console.\nThe installer will continue nonetheless." << endl;
+	if (systemVersion < 512) cout << "Your System Menu is too outdated.\nPlease download the latest update (4.3)." << endl;
+	else if (systemVersion == 610) cout << "Wii Mail does not work on a WiiU." << endl;
+	else {
+		cout << "Patching in progress..." << endl;
 
 		s32 error = patchMail();
 		if (error == RESPONSE_AREGISTERED) cout << "You seem to be registered already.\nIf your previous registration failed, please\ncontact a developer at " << SUPPORT << "." << endl;
 		else if (error != 0) cout << "An error occurred! Please send a screenshot of this error message\nto a developer or at " << SUPPORT << ".\nError code: " << error << endl;
 		else cout << "Finished!" << endl;
 	}
+
+	cout << "Please press HOME to quit." << endl;
 
 	while (true) {
 		VIDEO_WaitVSync();
