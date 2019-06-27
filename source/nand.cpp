@@ -1,29 +1,25 @@
-#include "nand.h"
+#include <cstdlib>
+#include <cstring>
+
 #include <malloc.h>
+
+#include "nand.hpp"
 
 static bool isNANDInitialised = false;
 
 s32 NAND_Init() {
     s32 error = ISFS_Initialize();
 
-    if (error >= 0) {
-        isNANDInitialised = true;
-    } else {
-        return error;
-    }
+    if (error >= 0) isNANDInitialised = true;
+    else return error;
 
     return 0;
 }
 
 s32 NAND_Exit() {
     s32 error = ISFS_Deinitialize();
-
-    if (error >= 0) {
-        isNANDInitialised = false;
-    } else {
-        return error;
-    }
-
+    if (error >= 0) isNANDInitialised = false;
+    else return error;
     return 0;
 }
 
@@ -35,7 +31,7 @@ s32 NAND_ReadFile(const char* filePath, void* buffer, u32 bufferLength) {
     s32 file = ISFS_Open(filePath, ISFS_OPEN_READ);
     if (file < 0) return file;
 
-    u8* readBuffer = memalign(32, bufferLength);
+    u8* readBuffer = (u8*)memalign(32, bufferLength);
 
     s32 error = ISFS_Read(file, readBuffer, bufferLength);
     if (error < 0) {
@@ -55,11 +51,8 @@ s32 NAND_WriteFile(const char* filePath, const void* buffer, u32 bufferLength, b
     if (!isNANDInitialised) return -1;
 
     if (!NAND_IsFilePresent(filePath)) {
-        if (!createFile) {
-            return -1;
-        } else {
-            ISFS_CreateFile(filePath, 0, 3, 3, 3);
-        }
+        if (!createFile) return -1;
+        else ISFS_CreateFile(filePath, 0, 3, 3, 3);
     }
 
     s32 file = ISFS_Open(filePath, ISFS_OPEN_WRITE);
@@ -82,9 +75,8 @@ bool NAND_IsFilePresent(const char* filePath) {
 
     s32 file = ISFS_Open(filePath, ISFS_OPEN_READ);
 
-    if (file < 0) {
-        return false;
-    } else {
+    if (file < 0) return false;
+    else {
         ISFS_Close(file);
         return true;
     }
@@ -96,7 +88,7 @@ s32 NAND_GetFileSize(const char* filePath, u32* fileSize) {
     s32 file = ISFS_Open(filePath, ISFS_OPEN_READ);
     if (file < 0) return file;
 
-    fstats* fileStats = memalign(32, sizeof(fstats));
+    fstats* fileStats = (fstats*)memalign(32, sizeof(fstats));
     s32 error = ISFS_GetFileStats(file, fileStats);
     if (error < 0) return error;
 

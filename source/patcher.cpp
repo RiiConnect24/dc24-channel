@@ -1,9 +1,15 @@
-#include "patcher.h"
-#include "config.h"
-#include "nand.h"
-#include "network.h"
-#include "network/picohttpparser.h"
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+
 #include <malloc.h>
+#include <network.h>
+
+#include "config.hpp"
+#include "nand.hpp"
+#include "patcher.hpp"
+
+using namespace std;
 
 unsigned int calcChecksum(char* buffer, int length) {
     int totalChecksum = 0;
@@ -34,13 +40,14 @@ s32 getSystemMenuVersion() {
     // Get the system menu tmd
     s32 systemMenuVersion;
     u32 tmdSize;
+
     s32 error = __ES_Init();
     if (error < 0) return error;
 
     error = ES_GetStoredTMDSize(0x0000000100000002, &tmdSize);
     if (error < 0) return error;
 
-    signed_blob* tmdContent = memalign(32, tmdSize);
+    signed_blob* tmdContent = (signed_blob*)memalign(32, tmdSize);
     char tmdContentBuffer[tmdSize], titleVersionChar[5] = "";
     error = ES_GetStoredTMD(0x0000000100000002, tmdContent, tmdSize);
     if (error < 0) return error;
@@ -56,28 +63,33 @@ s32 getSystemMenuVersion() {
 }
 
 s32 getSystemMenuIOS(const s32 systemMenuVersion) {
-    const s32 smv = systemMenuVersion;
+    switch (systemMenuVersion) {
+        case 33:
+            return 9;
+        case 128:
+        case 97:
+        case 130:
+        case 162:
+            return 11;
+        case 192:
+        case 193:
+        case 194:
+            return 20;
+        case 326:
+            return 40;
+        case 390:
+            return 52;
+        default:
+            break;
+    }
 
-    if (smv == 33)
-        return 9;
-    else if (smv == 128 || smv == 97 || smv == 130 || smv == 162)
-        return 11;
-    else if (smv >= 192 && smv <= 194)
-        return 20;
-    else if ((smv >= 224 && smv <= 290) || (smv >= 352 && smv <= 354))
-        return 30;
-    else if (smv == 326)
-        return 40;
-    else if (smv >= 384 && smv <= 386)
-        return 50;
-    else if (smv == 390)
-        return 52;
-    else if (smv >= 416 && smv <= 454)
-        return 60;
-    else if (smv >= 480 && smv <= 486)
-        return 70;
-    else if (smv >= 512 && smv <= 518)
-        return 80;
+    // laziness came all over me here uwu
+
+    if ((systemMenuVersion >= 224 && systemMenuVersion <= 290) || (systemMenuVersion >= 352 && systemMenuVersion <= 354)) return 30;
+    if (systemMenuVersion >= 384 && systemMenuVersion <= 386) return 50;
+    if (systemMenuVersion >= 416 && systemMenuVersion <= 454) return 60;
+    if (systemMenuVersion >= 480 && systemMenuVersion <= 486) return 70;
+    if (systemMenuVersion >= 512 && systemMenuVersion <= 518) return 80;
 
     return -1;
 }
@@ -95,7 +107,6 @@ void patchNWC24MSG(unionNWC24MSG* unionFile, char passwd[0x20], char mlchkid[0x2
     for (int i = 0; i < 5; i++) {
         char formattedLink[0x80] = "";
         sprintf(formattedLink, "http://%s/cgi-bin/%s.cgi", BASE_HTTP_URL, engines[i]);
-
         strcpy(unionFile->structNWC24MSG.urls[i], formattedLink);
     }
 
@@ -114,9 +125,10 @@ s32 patchMail() {
 
     s32 error = NAND_ReadFile("/shared2/wc24/nwc24msg.cfg", fileBufferNWC24MSG, 0x400);
     if (error < 0) {
-        printf("The nwc24msg.cfg file couldn't be read\n");
+        cout << "The nwc24msg.cfg file couldn't be read" << endl;
         return error;
     }
+
     memcpy(&fileUnionNWC24MSG, fileBufferNWC24MSG, 0x400);
 
     // Separate the file magic and checksum
@@ -125,69 +137,70 @@ s32 patchMail() {
 
     // Check the file magic and checksum
     if (strcmp(fileUnionNWC24MSG.structNWC24MSG.magic, "WcCf") != 0) {
-        printf("The file couldn't be verified\n");
-        return -1;
+        cout << "The file couldn't be verified" << endl;
+        return 1;
     }
     if (oldChecksum != calculatedChecksum) {
-        printf("The checksum isn't corresponding\n");
-        return -1;
+        cout << "The checksum isn't corresponding" << endl;
+        return 2;
     }
 
     // Get the friend code
     s64 fc = fileUnionNWC24MSG.structNWC24MSG.friendCode;
     if (fc < 0) {
-        printf("Invalid Friend Code: %lli\n", fc);
-        return fc;
+        cout << "Invalid Friend Code: " << fc << endl;
+        return 3;
+    }
+
+    s32 sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if (sock == INVALID_SOCKET) {
+        cout << "Socket failure: " << sock << endl;
+        return 4;
     }
 
     // Request for a passwd/mlchkid
-    char response[2048] = "";
-    sprintf(response, "mlid=w%016lli", fc);
-    error = postRequest(BASE_HTTP_URL, "/cgi-bin/patcher.cgi", 80, &response, sizeof(response));
-    if (error < 0) {
-        printf("Couldn't request the data: %li\n", error);
-        return error;
+    char request_text[1024];
+    sprintf(request_text, "GET /cgi-bin/patcher.cgi\r\nHost: %s\r\nUser-Agent: %s\r\n\r\nmlid=w%016lli", BASE_HTTP_URL, USERAGENT, fc);
+
+    struct sockaddr_in sain;
+    sain.sin_family = AF_INET;
+    sain.sin_port = htons(80);
+    sain.sin_addr.s_addr = *((unsigned long*)(net_gethostbyname(BASE_HTTP_URL)->h_addr_list[0]));
+
+    if (net_connect(sock, (struct sockaddr*)&sain, sizeof(sain)) < 0) {
+        cout << "Couldn't connect to server." << endl;
+        return 5;
     }
 
-    // Parse the response
-    struct phr_header headers[10];
-    size_t num_headers;
-    num_headers = sizeof(headers) / sizeof(headers[0]);
-    error = phr_parse_headers(response, strlen(response) + 1, headers, &num_headers, 0);
+    net_send(sock, request_text, strlen(request_text), 0);
+    cout << "Data sent! Awaiting response...";
 
-    serverResponseCode responseCode = RESPONSE_NOTINIT;
-    char responseMlchkid[0x24] = "";
-    char responsePasswd[0x20] = "";
+    char response[2048];
+    net_recv(sock, response, strlen(response), 0);
 
-    for (int i = 0; i != num_headers; ++i) {
-        char* currentHeaderName;
-        currentHeaderName = malloc((int)headers[i].name_len);
-        sprintf(currentHeaderName, "%.*s", (int)headers[i].name_len, headers[i].name);
+    net_shutdown(sock, 0);
+    net_close(sock);    
 
-        char* currentHeaderValue;
-        currentHeaderValue = malloc((int)headers[i].value_len);
-        sprintf(currentHeaderValue, "%.*s", (int)headers[i].value_len, headers[i].value);
+    int responseCode = RESPONSE_NOTINIT;
+    char* responseMlchkid = "";
+    char* responsePasswd = "";
 
-        if (strcmp(currentHeaderName, "cd") == 0)
-            responseCode = atoi(currentHeaderValue);
-        else if (strcmp(currentHeaderName, "mlchkid") == 0)
-            memcpy(&responseMlchkid, currentHeaderValue, 0x24);
-        else if (strcmp(currentHeaderName, "passwd") == 0)
-            memcpy(&responsePasswd, currentHeaderValue, 0x20);
-    }
+    sscanf(response, "cd:%d", &responseCode);
+    sscanf(response, "mlchkid:%s", responseMlchkid);
+    sscanf(response, "passwd:%s", responsePasswd);
 
     // Check the response code
     switch (responseCode) {
     case RESPONSE_INVALID:
-        printf("Invalid friend code\n");
+        cout << "Invalid friend code." << endl;
         return 1;
         break;
     case RESPONSE_AREGISTERED:
-        printf("Already registered\n");
+        cout << "Already registered." << endl;
         return RESPONSE_AREGISTERED;
         break;
     case RESPONSE_DB_ERROR:
-        printf("Server database error.");
+        cout << "Server database error." << endl;
         return 1;
         break;
     case RESPONSE_OK:
@@ -196,22 +209,20 @@ s32 patchMail() {
             return 1;
         } else {
             // Patch the nwc24msg.cfg file
-            printf("before:%s\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
+            cout << "before: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
             patchNWC24MSG(&fileUnionNWC24MSG, responsePasswd, responseMlchkid);
-            printf("after:%s\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
+            cout << "after: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
 
             error = NAND_WriteFile("/shared2/wc24/nwc24msg.cfg", fileUnionNWC24MSG.charNWC24MSG, 0x400, false);
             if (error < 0) {
-                printf("The nwc24msg.cfg file couldn't be updated.\n");
+                cout << "The nwc24msg.cfg file couldn't be updated." << endl;
                 return error;
             }
             return 0;
             break;
         }
     default:
-        printf("Incomplete data. Check if the server is up.\nFeel free to send a developer the "
-               "following content: \n%s\n",
-               response);
+        cout << "Incomplete data. Check if the server is up.\nFeel free to send a developer the following content: \n" << response << endl;
         return 1;
         break;
     }

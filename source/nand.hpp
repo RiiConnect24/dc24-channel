@@ -1,9 +1,6 @@
-#ifndef NAND_H
-#define NAND_H
+#ifndef NAND_HPP
+#define NAND_HPP
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <gccore.h>
 
 s32 NAND_Init();
