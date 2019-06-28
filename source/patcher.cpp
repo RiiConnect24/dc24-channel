@@ -137,11 +137,11 @@ s32 patchMail() {
 
     // Check the file magic and checksum
     if (strcmp(fileUnionNWC24MSG.structNWC24MSG.magic, "WcCf") != 0) {
-        cout << "The file couldn't be verified" << endl;
+        cout << "The file couldn't be verified." << endl;
         return 1;
     }
     if (oldChecksum != calculatedChecksum) {
-        cout << "The checksum isn't corresponding" << endl;
+        cout << "The checksum isn't corresponding." << endl;
         return 2;
     }
 
@@ -187,8 +187,8 @@ s32 patchMail() {
     net_close(sock);    
 
     int responseCode = RESPONSE_NOTINIT; // cd
-    char responseMlchkid[255]; // mlchkid
-    char  responsePasswd[255]; // passwd
+    char responseMlchkid[0x24]; // mlchkid
+    char responsePasswd[0x20]; // passwd
 
     // Check the response code
     switch (responseCode) {
