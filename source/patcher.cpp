@@ -96,7 +96,7 @@ s32 getSystemMenuIOS(const s32 systemMenuVersion) {
 
 void patchNWC24MSG(unionNWC24MSG* unionFile, char passwd[0x20], char mlchkid[0x24]) {
     // Patch mail domain
-    strcpy(unionFile->structNWC24MSG.mailDomain, BASE_MAIL_URL);
+    strcpy(unionFile->structNWC24MSG.mailDomain, MAIL);
 
     // Patch mlchkid and passwd
     strcpy(unionFile->structNWC24MSG.passwd, passwd);
@@ -106,7 +106,7 @@ void patchNWC24MSG(unionNWC24MSG* unionFile, char passwd[0x20], char mlchkid[0x2
     const char engines[0x5][0x80] = { "account", "check", "receive", "delete", "send" };
     for (int i = 0; i < 5; i++) {
         char formattedLink[0x80] = "";
-        sprintf(formattedLink, "http://%s/cgi-bin/%s.cgi", BASE_HTTP_URL, engines[i]);
+        sprintf(formattedLink, "http://%s/cgi-bin/%s.cgi", HTTP, engines[i]);
         strcpy(unionFile->structNWC24MSG.urls[i], formattedLink);
     }
 
@@ -160,34 +160,35 @@ s32 patchMail() {
 
     // Request for a passwd/mlchkid
     char request_text[1024];
-    sprintf(request_text, "GET /cgi-bin/patcher.cgi\r\nHost: %s\r\nUser-Agent: %s\r\n\r\nmlid=w%016lli", BASE_HTTP_URL, USERAGENT, fc);
+    sprintf(request_text, "POST /cgi-bin/patcher.cgi HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\n\r\nmlid=w%016lli", HTTP, USERAGENT, fc);
 
     struct sockaddr_in sain;
     sain.sin_family = AF_INET;
     sain.sin_port = htons(80);
-    sain.sin_addr.s_addr = *((unsigned long*)(net_gethostbyname(BASE_HTTP_URL)->h_addr_list[0]));
+    sain.sin_addr.s_addr = *((unsigned long*)(net_gethostbyname(HTTP)->h_addr_list[0]));
 
-    if (net_connect(sock, (struct sockaddr*)&sain, sizeof(sain)) < 0) {
+    cout << "Connecting to the server..." << endl;
+    int result = net_connect(sock, (struct sockaddr*)&sain, sizeof(sain));
+    if (result < 0) {
         cout << "Couldn't connect to server." << endl;
         return 5;
     }
 
+    cout << "Connected to the server. Sending data..." << endl;
     net_send(sock, request_text, strlen(request_text), 0);
-    cout << "Data sent! Awaiting response...";
+    cout << "Data sent. Awaiting response..." << endl;
 
-    char response[2048];
-    net_recv(sock, response, strlen(response), 0);
+    int bufferlen;
+    char buffer[256];
+    while((bufferlen = net_recv(sock, buffer, 255, 0)) != 0) if(bufferlen > 0)  buffer[bufferlen] = 0;
+    cout << "Data received. Parsing..." << endl;
 
     net_shutdown(sock, 0);
     net_close(sock);    
 
-    int responseCode = RESPONSE_NOTINIT;
-    char responseMlchkid[255];
-    char  responsePasswd[255];
-
-    sscanf(response, "cd:%d", &responseCode);
-    sscanf(response, "mlchkid:%s", responseMlchkid);
-    sscanf(response, "passwd:%s", responsePasswd);
+    int responseCode = RESPONSE_NOTINIT; // cd
+    char responseMlchkid[255]; // mlchkid
+    char  responsePasswd[255]; // passwd
 
     // Check the response code
     switch (responseCode) {
@@ -205,24 +206,25 @@ s32 patchMail() {
         break;
     case RESPONSE_OK:
         if (strcmp(responseMlchkid, "") == 0 || strcmp(responsePasswd, "") == 0) {
-            // If it's empty, nothing we can do.
+            // If it's empty, there's nothing we can do.
             return 1;
         } else {
             // Patch the nwc24msg.cfg file
-            cout << "before: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
+            cout << "Before: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
             patchNWC24MSG(&fileUnionNWC24MSG, responsePasswd, responseMlchkid);
-            cout << "after: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
+            cout << "After: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
 
             error = NAND_WriteFile("/shared2/wc24/nwc24msg.cfg", fileUnionNWC24MSG.charNWC24MSG, 0x400, false);
             if (error < 0) {
                 cout << "The nwc24msg.cfg file couldn't be updated." << endl;
                 return error;
             }
+
             return 0;
             break;
         }
     default:
-        cout << "Incomplete data. Check if the server is up.\nFeel free to send a developer the following content: \n" << response << endl;
+        cout << "Incomplete data. Check if the server is up.\nFeel free to send a developer the following content: (this may be a lot of data)\n" << buffer << endl;
         return 1;
         break;
     }

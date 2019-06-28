@@ -20,7 +20,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 export OUTPUT	:= $(CURDIR)/$(TARGET)
 export VPATH	:= $(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) $(foreach dir,$(DATA),$(CURDIR)/$(dir))
-export DEPSDIR	:=$(CURDIR)/$(BUILD)
+export DEPSDIR	:= $(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
@@ -29,9 +29,9 @@ SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(CPPFILES)),)
-	export LD	:=	$(CC)
+	export LD := $(CC)
 else
-	export LD	:=	$(CXX)
+	export LD := $(CXX)
 endif
 #---------------------------------------------------------------------------------
 export OFILES_BIN	:= $(addsuffix .o,$(BINFILES))

@@ -1,14 +1,16 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#define VERSION "2.0.2"
+#define VERSION "2.1.0"
 #define CREDITS "Spotlight, Apfel"
 
-#define BASE_HTTP_URL "mtw.rc24.xyz"
-#define BASE_MAIL_URL "@rc24.xyz"
-
-#define SUPPORT "support@rc24.xyz"
+#define HTTP "mtw.rc24.xyz"
+#define MAIL "@rc24.xyz"
 
 #define USERAGENT "Nintendo Wii"
+
+#define SUPPORT "support@riiconnect24.net"
+
+#define LOGPATH "/mail-patch.log"
 
 #endif

@@ -16,8 +16,6 @@ using namespace std;
 
 int main(int argc, char** argv) {
     VIDEO_Init();
-    WPAD_Init();
-    NAND_Init();
 
     rmode = VIDEO_GetPreferredMode(NULL);
     xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
@@ -36,23 +34,19 @@ int main(int argc, char** argv) {
     char gateway[16] = {0};
     char netmask[16] = {0};
 
-
-    cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << "." << endl;
-
+    cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << ".\nInitializing..." << endl;
+    WPAD_Init();
+    NAND_Init();
+    
     s32 systemVersion = getSystemMenuVersion();
     if (systemVersion < 512) cout << "Your System Menu is too outdated.\nPlease download the latest update (4.3)." << endl;
-    else if (systemVersion == 610) cout << "Wii Mail does not work on a WiiU." << endl;
+    //else if (systemVersion == 610) cout << "Wii Mail does not work on a WiiU." << endl;
     else {
         cout << "Connecting to the Internet..." << endl;
         if (if_config(localip, netmask, gateway, true, 20) >= 0) cout << "Connected to the Internet." << endl;
         else {
-            cout << "An error occurred! We could not connect to the Internet.\nPress HOME to quit." << endl;
-
-            while (true) {
-                VIDEO_WaitVSync();
-                WPAD_ScanPads();
-                if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) { NAND_Exit(); exit(1); }
-            }
+            cout << "An error occurred! We could not connect to the Internet." << endl;
+            goto exitPoint;
         }
 
         cout << "Patching in progress..." << endl;
@@ -63,7 +57,9 @@ int main(int argc, char** argv) {
         else cout << "Finished!" << endl;
     }
 
+exitPoint:
     cout << "Please press HOME to quit." << endl;
+    NAND_Exit();
 
     while (true) {
         VIDEO_WaitVSync();
@@ -71,6 +67,5 @@ int main(int argc, char** argv) {
         if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) break;
     }
 
-    NAND_Exit();
     return 0;
 }
