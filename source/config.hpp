@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#define VERSION "2.1.1"
+#define VERSION "3.0.0"
 #define CREDITS "Spotlight, Apfel"
 #define SUPPORT "support@riiconnect24.net"
 
