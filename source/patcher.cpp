@@ -1,17 +1,13 @@
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 
-#include <malloc.h>
 #include <network.h>
 
 #include "config.hpp"
 #include "nand.hpp"
 #include "patcher.hpp"
 
-using namespace std;
-
-unsigned int calcChecksum(char* buffer, int length) {
+unsigned int Patcher::Checksum(char* buffer, int length) {
     int totalChecksum = 0;
     for (int i = 0; i < length; i += 4) {
         int currentBytes;
@@ -23,142 +19,74 @@ unsigned int calcChecksum(char* buffer, int length) {
     return totalChecksum;
 }
 
-s64 getFriendCode() {
-    // Open the file containing the friend code
-    static char buffer[32];
-    s32 error = NAND_ReadFile("/shared2/wc24/nwc24msg.cfg", buffer, 32);
-    if (error < 0) return error;
+void Patcher::NWC24MSG(UnionNWC24MSG* unionFile, char mlchkid[0x24], char passwd[0x20]) {
+    // Patch the used mail domain,
+    strcpy(unionFile->NWC24MSG.MailDomain, MAIL);
 
-    // Copy the friend code (0x8 -> 0xF)
-    s64 fc = 0;
-    memcpy(&fc, buffer + 0x8, 0x8);
+    // and then patch the Mail check ID and password.
+    strcpy(unionFile->NWC24MSG.Passwd, passwd);
+    strcpy(unionFile->NWC24MSG.Mlchkid, mlchkid);
 
-    return fc;
-}
-
-s32 getSystemMenuVersion() {
-    // Get the system menu tmd
-    s32 systemMenuVersion;
-    u32 tmdSize;
-
-    s32 error = __ES_Init();
-    if (error < 0) return error;
-
-    error = ES_GetStoredTMDSize(0x0000000100000002, &tmdSize);
-    if (error < 0) return error;
-
-    signed_blob* tmdContent = (signed_blob*)memalign(32, tmdSize);
-    char tmdContentBuffer[tmdSize], titleVersionChar[5] = "";
-    error = ES_GetStoredTMD(0x0000000100000002, tmdContent, tmdSize);
-    if (error < 0) return error;
-
-    memcpy(tmdContentBuffer, tmdContent, tmdSize);
-    snprintf(titleVersionChar, 5, "%.2x%.2x", tmdContentBuffer[0x1DC], tmdContentBuffer[0x1DD]);
-    systemMenuVersion = strtol(titleVersionChar, NULL, 16);
-
-    error = __ES_Close();
-    if (error < 0) return error;
-
-    return systemMenuVersion;
-}
-
-s32 getSystemMenuIOS(const s32 systemMenuVersion) {
-    switch (systemMenuVersion) {
-        case 33:
-            return 9;
-        case 128:
-        case 97:
-        case 130:
-        case 162:
-            return 11;
-        case 192:
-        case 193:
-        case 194:
-            return 20;
-        case 326:
-            return 40;
-        case 390:
-            return 52;
-        default:
-            break;
-    }
-
-    // laziness came all over me here uwu
-
-    if ((systemMenuVersion >= 224 && systemMenuVersion <= 290) || (systemMenuVersion >= 352 && systemMenuVersion <= 354)) return 30;
-    if (systemMenuVersion >= 384 && systemMenuVersion <= 386) return 50;
-    if (systemMenuVersion >= 416 && systemMenuVersion <= 454) return 60;
-    if (systemMenuVersion >= 480 && systemMenuVersion <= 486) return 70;
-    if (systemMenuVersion >= 512 && systemMenuVersion <= 518) return 80;
-
-    return -1;
-}
-
-void patchNWC24MSG(unionNWC24MSG* unionFile, char passwd[0x20], char mlchkid[0x24]) {
-    // Patch mail domain
-    strcpy(unionFile->structNWC24MSG.mailDomain, MAIL);
-
-    // Patch mlchkid and passwd
-    strcpy(unionFile->structNWC24MSG.passwd, passwd);
-    strcpy(unionFile->structNWC24MSG.mlchkid, mlchkid);
-
-    // Patch the URLs
+    // Also, we need to patch the old URLs with working ones. These are the engines.
     const char engines[0x5][0x80] = { "account", "check", "receive", "delete", "send" };
     for (int i = 0; i < 5; i++) {
-        char formattedLink[0x80] = "";
+        // Copy the new engine in...
+        char formattedLink[0x80];
         sprintf(formattedLink, "http://%s/cgi-bin/%s.cgi", HTTP, engines[i]);
-        strcpy(unionFile->structNWC24MSG.urls[i], formattedLink);
+
+        // And write it into the buffer.
+        strcpy(unionFile->NWC24MSG.URLs[i], formattedLink);
     }
 
-    // Patch the title booting
-    unionFile->structNWC24MSG.titleBooting = 1;
+    // This'll patch the title booting.
+    unionFile->NWC24MSG.titleBooting = 1;
 
-    // Update the checksum
-    int checksum = calcChecksum(unionFile->charNWC24MSG, 0x3FC);
-    unionFile->structNWC24MSG.checksum = checksum;
+    // And we need a proper checksum.
+    unionFile->NWC24MSG.Checksum = Patcher::Checksum(unionFile->Raw, 0x3FC);
 }
 
-s32 patchMail() {
-    // Read the nwc24msg.cfg file
-    static char fileBufferNWC24MSG[0x400] = "";
-    unionNWC24MSG fileUnionNWC24MSG;
+s32 Patcher::Mail() {
+    // Read the nwc24msg.cfg file...
+    static char fileBufferNWC24MSG[0x400];
+    UnionNWC24MSG fileUnionNWC24MSG;
 
-    s32 error = NAND_ReadFile("/shared2/wc24/nwc24msg.cfg", fileBufferNWC24MSG, 0x400);
+    // ...into our buffer.
+    s32 error = NAND::ReadFile("/shared2/wc24/nwc24msg.cfg", fileBufferNWC24MSG, 0x400);
     if (error < 0) {
-        cout << "The nwc24msg.cfg file couldn't be read" << endl;
+        std::cout << "The nwc24msg.cfg file couldn't be read." << std::endl;
         return error;
     }
 
     memcpy(&fileUnionNWC24MSG, fileBufferNWC24MSG, 0x400);
 
-    // Separate the file magic and checksum
-    unsigned int oldChecksum = fileUnionNWC24MSG.structNWC24MSG.checksum;
-    unsigned int calculatedChecksum = calcChecksum(fileUnionNWC24MSG.charNWC24MSG, 0x3FC);
+    // Separate the file magic and checksum,
+    unsigned int oldChecksum = fileUnionNWC24MSG.NWC24MSG.Checksum;
+    unsigned int calculatedChecksum = Patcher::Checksum(fileUnionNWC24MSG.Raw, 0x3FC);
 
-    // Check the file magic and checksum
-    if (strcmp(fileUnionNWC24MSG.structNWC24MSG.magic, "WcCf") != 0) {
-        cout << "The file couldn't be verified." << endl;
+    // and then check the file magic and checksum.
+    if (strcmp(fileUnionNWC24MSG.NWC24MSG.Magic, "WcCf") != 0) {
+        std::cout << "The file couldn't be verified." << std::endl;
         return 1;
-    }
-    if (oldChecksum != calculatedChecksum) {
-        cout << "The checksum isn't corresponding." << endl;
+    } else if (oldChecksum != calculatedChecksum) {
+        std::cout << "The checksum isn't corresponding." << std::endl;
         return 2;
     }
 
-    // Get the friend code
-    s64 fc = fileUnionNWC24MSG.structNWC24MSG.friendCode;
+    // Fetch the friend code.
+    s64 fc = fileUnionNWC24MSG.NWC24MSG.FriendCode;
     if (fc < 0) {
-        cout << "Invalid Friend Code: " << fc << endl;
+        std::cout << "Invalid Friend Code: " << fc << std::endl;
         return 3;
     }
 
+    // For data transmission, we need a socket. A working one, of course.
     s32 sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if (sock == INVALID_SOCKET) {
-        cout << "Socket failure: " << sock << endl;
+        std::cout << "Socket failure: " << sock << std::endl;
         return 4;
     }
 
-    // Request for a passwd/mlchkid
+    // This is our request for a new Mail Check ID and Password.
     char request_text[1024];
     sprintf(request_text, "POST /cgi-bin/patcher.cgi HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\n\r\nmlid=w%016lli", HTTP, USERAGENT, fc);
 
@@ -167,21 +95,21 @@ s32 patchMail() {
     sain.sin_port = htons(80);
     sain.sin_addr.s_addr = *((unsigned long*)(net_gethostbyname(HTTP)->h_addr_list[0]));
 
-    cout << "Connecting to the server..." << endl;
+    std::cout << "Connecting to the server..." << std::endl;
     int result = net_connect(sock, (struct sockaddr*)&sain, sizeof(sain));
     if (result < 0) {
-        cout << "Couldn't connect to server." << endl;
+        std::cout << "Couldn't connect to server." << std::endl;
         return 5;
     }
 
-    cout << "Connected to the server. Sending data..." << endl;
+    std::cout << "Connected to the server. Sending data..." << std::endl;
     net_send(sock, request_text, strlen(request_text), 0);
-    cout << "Data sent. Awaiting response..." << endl;
+    std::cout << "Data sent. Awaiting response..." << std::endl;
 
     int bufferlen;
     char buffer[256];
     while((bufferlen = net_recv(sock, buffer, 255, 0)) != 0) if(bufferlen > 0)  buffer[bufferlen] = 0;
-    cout << "Data received. Parsing..." << endl;
+    std::cout << "Data received. Parsing..." << std::endl;
 
     net_shutdown(sock, 0);
     net_close(sock);    
@@ -190,18 +118,26 @@ s32 patchMail() {
     char responseMlchkid[0x24]; // mlchkid
     char responsePasswd[0x20]; // passwd
 
+    /*
+        Well, it's pretty empty here. 
+        You may wonder why - and I don't blame you.
+        Currently, we're missing a library for parsing the HTTP response from the server.
+        But, even after searching for a while, I didn't find any code that would work on a Wii.
+        Yes, I even verified it, and everything I got was either an error, or an exception.
+    */
+
     // Check the response code
     switch (responseCode) {
     case RESPONSE_INVALID:
-        cout << "Invalid friend code." << endl;
+        std::cout << "Invalid friend code." << std::endl;
         return 1;
         break;
     case RESPONSE_AREGISTERED:
-        cout << "Already registered." << endl;
+        std::cout << "Already registered." << std::endl;
         return RESPONSE_AREGISTERED;
         break;
     case RESPONSE_DB_ERROR:
-        cout << "Server database error." << endl;
+        std::cout << "Server database error." << std::endl;
         return 1;
         break;
     case RESPONSE_OK:
@@ -209,22 +145,23 @@ s32 patchMail() {
             // If it's empty, there's nothing we can do.
             return 1;
         } else {
-            // Patch the nwc24msg.cfg file
-            cout << "Before: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
-            patchNWC24MSG(&fileUnionNWC24MSG, responsePasswd, responseMlchkid);
-            cout << "After: " << fileUnionNWC24MSG.structNWC24MSG.mailDomain << endl;
+            // Patch the nwc24msg.cfg file...
+            std::cout << "Before: " << fileUnionNWC24MSG.NWC24MSG.MailDomain << std::endl;
+            Patcher::NWC24MSG(&fileUnionNWC24MSG, responsePasswd, responseMlchkid);
+            std::cout << "After: " << fileUnionNWC24MSG.NWC24MSG.MailDomain << std::endl;
 
-            error = NAND_WriteFile("/shared2/wc24/nwc24msg.cfg", fileUnionNWC24MSG.charNWC24MSG, 0x400, false);
+            // ...and write the new file to the NAND.
+            error = NAND::WriteFile("/shared2/wc24/nwc24msg.cfg", fileUnionNWC24MSG.Raw, 0x400, false);
             if (error < 0) {
-                cout << "The nwc24msg.cfg file couldn't be updated." << endl;
+                std::cout << "The nwc24msg.cfg file couldn't be updated." << std::endl;
                 return error;
             }
 
             return 0;
             break;
         }
-    default:
-        cout << "Incomplete data. Check if the server is up.\nFeel free to send a developer the following content: (this may be a lot of data)\n" << buffer << endl;
+    case RESPONSE_NOTINIT:
+        std::cout << "Incomplete data. Check if the server is up.\nFeel free to send a developer the following content: (this may be a lot of data)\n" << buffer << std::endl;
         return 1;
         break;
     }

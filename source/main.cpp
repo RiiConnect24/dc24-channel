@@ -6,19 +6,15 @@
 #include <wiiuse/wpad.h>
 
 #include "config.hpp"
+#include "data.hpp"
 #include "nand.hpp"
 #include "patcher.hpp"
-
-static void* xfb = NULL;
-static GXRModeObj* rmode = NULL;
-
-using namespace std;
 
 int main(int argc, char** argv) {
     VIDEO_Init();
 
-    rmode = VIDEO_GetPreferredMode(NULL);
-    xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+    GXRModeObj* rmode = VIDEO_GetPreferredMode(NULL);
+    void* xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 
     console_init(xfb, 20, 20, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
 
@@ -34,32 +30,32 @@ int main(int argc, char** argv) {
     char gateway[16] = {0};
     char netmask[16] = {0};
 
-    cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << ".\nInitializing..." << endl;
+    std::cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << ".\nInitializing..." << std::endl;
     WPAD_Init();
-    NAND_Init();
+    NAND::Init();
     
-    s32 systemVersion = getSystemMenuVersion();
-    if (systemVersion < 512) cout << "Your System Menu is too outdated.\nPlease download the latest update (4.3)." << endl;
-    //else if (systemVersion == 610) cout << "Wii Mail does not work on a WiiU." << endl;
+    s32 systemVersion = Data::SystemMenuVersion();
+    if (systemVersion < 512) std::cout << "Your System Menu is too outdated.\nPlease download the latest update (4.3)." << std::endl;
+    //else if (systemVersion == 610) cout << "Wii Mail does not work on a WiiU." << std::endl;
     else {
-        cout << "Connecting to the Internet..." << endl;
-        if (if_config(localip, netmask, gateway, true, 20) >= 0) cout << "Connected to the Internet." << endl;
+        std::cout << "Connecting to the Internet..." << std::endl;
+        if (if_config(localip, netmask, gateway, true, 20) >= 0) std::cout << "Connected to the Internet." << std::endl;
         else {
-            cout << "An error occurred! We could not connect to the Internet." << endl;
+            std::cout << "An error occurred! We could not connect to the Internet." << std::endl;
             goto exitPoint;
         }
 
-        cout << "Patching in progress..." << endl;
+        std::cout << "Patching in progress..." << std::endl;
 
-        s32 error = patchMail();
-        if (error == RESPONSE_AREGISTERED) cout << "You seem to be registered already.\nIf your previous registration failed, please\ncontact a developer at " << SUPPORT << "." << endl;
-        else if (error != 0) cout << "An error occurred! Please send a screenshot of this error message\nto a developer or at " << SUPPORT << ".\nError code: " << error << endl;
-        else cout << "Finished!" << endl;
+        s32 error = Patcher::Mail();
+        if (error == RESPONSE_AREGISTERED) std::cout << "You seem to be registered already.\nIf your previous registration failed, please\ncontact a developer at " << SUPPORT << "." << std::endl;
+        else if (error != 0) std::cout << "An error occurred! Please send a screenshot of this error message\nto a developer or at " << SUPPORT << ".\nError code: " << error << std::endl;
+        else std::cout << "Finished!" << std::endl;
     }
 
 exitPoint:
-    cout << "Please press HOME to quit." << endl;
-    NAND_Exit();
+    std::cout << "Please press HOME to quit." << std::endl;
+    NAND::Exit();
 
     while (true) {
         VIDEO_WaitVSync();

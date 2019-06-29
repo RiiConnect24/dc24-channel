@@ -3,48 +3,93 @@
 
 #include <gccore.h>
 
+// Different responses from the server.
 typedef enum {
+    // The response hasn't been received due to an error with the connection.
     RESPONSE_NOTINIT = 0,
 
+    // Everything went okay.
     RESPONSE_OK = 100,
+
+    // Invalid data has been sent.
     RESPONSE_INVALID = 610,
+
+    // This ID has been registered already.
     RESPONSE_AREGISTERED = 211,
+
+    // The Database sent an error.
     RESPONSE_DB_ERROR = 410,
-} serverResponseCode;
+} ServerResponseCode;
 
 typedef union {
-    struct fileNWC24MSG {
-        char magic[0x4];
-        char unknwown[0x4];
-        s64 friendCode;
-        char idGen[0x4];
-        char idRegistration[0x4];
-        char mailDomain[0x40];
-        char passwd[0x20];
-        char mlchkid[0x24];
-        char urls[0x5][0x80];
-        char reserved[0xDC];
+    // Defines a single nwc24msg.cfg container.
+    struct NWC24MSG {
+        // File magic, holds the "WcCf" code at start.
+        char Magic[0x4];
+
+        // Unknown data.
+        char Unknown[0x4];
+
+        // The user's friend code.
+        s64 FriendCode;
+
+        // ID used for generation of specific data.
+        char IDGen[0x4];
+
+        // ID used for registration of the console.
+        char IDRegistration[0x4];
+
+        // Used Mail domain for sending mails.
+        char MailDomain[0x40];
+
+        // Password necessary for authentication.
+        char Passwd[0x20];
+
+        // Mail Check ID.
+        char Mlchkid[0x24];
+
+        // All URLs in one array.
+        char URLs[0x5][0x80];
+
+        // Reserved data.
+        char Reserved[0xDC];
+
+        // If set 1, Title Booting will be possible.
         unsigned int titleBooting;
-        unsigned int checksum;
-    } structNWC24MSG;
 
-    char charNWC24MSG[0x400];
-} unionNWC24MSG;
+        // Checksum used for verification.
+        unsigned int Checksum;
+    } NWC24MSG;
 
+    // Holds the configuration as a char.
+    char Raw[0x400];
+} UnionNWC24MSG;
+
+// Defines the Content Map, defining different APP files for an application.
 typedef struct {
-    char filename[0x8];
+    // The file's given name.
+    char Filename[0x8];
+
+    // The hash of the providen file.
     u8 filehash[0x14];
-} contentMapObject;
+} ContentMapObject;
 
-unsigned int calcChecksum(char *buffer, int length);
-s64 getFriendCode();
+class Patcher {
+public:
+    // Calculates the new Checksum.
+    static unsigned int Checksum(char *buffer, int length);
 
-s32 getSystemMenuVersion();
-s32 getSystemMenuIOS(const s32 systemMenuVersion);
+    // Patches the ncw24msg.cfg with new URLs, a new Mail Check ID and a new password.
+    static void NWC24MSG(UnionNWC24MSG *unionFile, char mlchkid[0x24], char passwd[0x20]);
 
-void patchNWC24MSG(unionNWC24MSG *unionFile, char passwd[0x20], char mlchkid[0x24]);
-s32 patchMail();
-s32 patchContentMap();
-s32 patchIOSHash();
+    // Patches mail. This should be called, instead of the other calls.
+    static s32 Mail();
+
+    // Patches the content map.
+    static s32 ContentMap();
+
+    // Patches the Hash of the used IOS.
+    static s32 IOSHash();
+};
 
 #endif

@@ -5,28 +5,28 @@
 
 #include "nand.hpp"
 
-static bool isNANDInitialised = false;
+static bool isinit;
 
-s32 NAND_Init() {
+s32 NAND::Init() {
     s32 error = ISFS_Initialize();
 
-    if (error >= 0) isNANDInitialised = true;
+    if (error >= 0) isinit = true;
     else return error;
 
     return 0;
 }
 
-s32 NAND_Exit() {
+s32 NAND::Exit() {
     s32 error = ISFS_Deinitialize();
-    if (error >= 0) isNANDInitialised = false;
+    if (error >= 0) isinit = false;
     else return error;
     return 0;
 }
 
-s32 NAND_ReadFile(const char* filePath, void* buffer, u32 bufferLength) {
-    if (!isNANDInitialised) return -1;
+s32 NAND::ReadFile(const char* filePath, void* buffer, u32 bufferLength) {
+    if (!isinit) return -1;
 
-    if (!NAND_IsFilePresent(filePath)) return -1;
+    if (!NAND::IsFilePresent(filePath)) return -1;
 
     s32 file = ISFS_Open(filePath, ISFS_OPEN_READ);
     if (file < 0) return file;
@@ -47,10 +47,10 @@ s32 NAND_ReadFile(const char* filePath, void* buffer, u32 bufferLength) {
     return 0;
 }
 
-s32 NAND_WriteFile(const char* filePath, const void* buffer, u32 bufferLength, bool createFile) {
-    if (!isNANDInitialised) return -1;
+s32 NAND::WriteFile(const char* filePath, const void* buffer, u32 bufferLength, bool createFile) {
+    if (!isinit) return -1;
 
-    if (!NAND_IsFilePresent(filePath)) {
+    if (!NAND::IsFilePresent(filePath)) {
         if (!createFile) return -1;
         else ISFS_CreateFile(filePath, 0, 3, 3, 3);
     }
@@ -70,8 +70,8 @@ s32 NAND_WriteFile(const char* filePath, const void* buffer, u32 bufferLength, b
     return 0;
 }
 
-bool NAND_IsFilePresent(const char* filePath) {
-    if (!isNANDInitialised) return false;
+bool NAND::IsFilePresent(const char* filePath) {
+    if (!isinit) return false;
 
     s32 file = ISFS_Open(filePath, ISFS_OPEN_READ);
 
@@ -82,8 +82,8 @@ bool NAND_IsFilePresent(const char* filePath) {
     }
 }
 
-s32 NAND_GetFileSize(const char* filePath, u32* fileSize) {
-    if (!isNANDInitialised) return -1;
+s32 NAND::GetFileSize(const char* filePath, u32* fileSize) {
+    if (!isinit) return -1;
 
     s32 file = ISFS_Open(filePath, ISFS_OPEN_READ);
     if (file < 0) return file;
