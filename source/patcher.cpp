@@ -86,9 +86,13 @@ s32 Patcher::Mail() {
         return 4;
     }
 
+    // We need to create a body for our data.
+    char body[50];
+    sprintf(body, "mlid=w%016lli", fc);
+
     // This is our request for a new Mail Check ID and Password.
     char request_text[4096];
-    sprintf(request_text, "POST /cgi-bin/patcher.cgi HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\nmlid=w%016lli", HTTP, USERAGENT, fc);
+    sprintf(request_text, "POST /cgi-bin/patcher.cgi HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %i\r\nCache-Control: no-cache\r\n\r\n%s", HTTP, USERAGENT, strlen(body), body);
 
     struct sockaddr_in sain;
     sain.sin_family = AF_INET;
