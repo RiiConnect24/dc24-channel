@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
     char netmask[16] = {0};
 
     std::cout << "\nRiiConnect24 - Mail Patcher " << VERSION << "\nMade by " << CREDITS << ".\nInitializing..." << std::endl;
+    PAD_Init();
     WPAD_Init();
     NAND::Init();
     
@@ -54,13 +55,14 @@ int main(int argc, char** argv) {
     }
 
 exitPoint:
-    std::cout << "Please press HOME to quit." << std::endl;
+    std::cout << "Please press HOME or Start to quit." << std::endl;
     NAND::Exit();
 
     while (true) {
         VIDEO_WaitVSync();
         WPAD_ScanPads();
-        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) break;
+        PAD_ScanPads();
+        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME || PAD_ButtonsDown(0) & PAD_BUTTON_START) break;
     }
 
     return 0;
