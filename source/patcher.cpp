@@ -5,6 +5,7 @@
 
 #include "config.hpp"
 #include "nand.hpp"
+#include "ssl.hpp"
 #include "patcher.hpp"
 
 unsigned int Patcher::Checksum(char* buffer, int length) {
@@ -79,13 +80,6 @@ s32 Patcher::Mail() {
         return 3;
     }
 
-    // For data transmission, we need a socket. A working one, of course.
-    s32 sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if (sock == INVALID_SOCKET) {
-        std::cout << "Socket failure: " << sock << std::endl;
-        return 4;
-    }
-
     // We need to create a body for our data.
     char body[50];
     sprintf(body, "mlid=w%016lli", fc);
@@ -94,17 +88,105 @@ s32 Patcher::Mail() {
     char request_text[4096];
     sprintf(request_text, "POST /cgi-bin/patcher.cgi HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %i\r\nCache-Control: no-cache\r\n\r\n%s", HTTP, USERAGENT, strlen(body), body);
 
+    struct hostent* dns;
+    dns = net_gethostbyname(HTTP);
+    if (dns->h_length <= 0) {
+        std::cout << "Could not find the server's address." << std::endl;
+        return 4;
+    }
+
     struct sockaddr_in sain;
+
+    memcpy(&sain.sin_addr.s_addr, dns->h_addr, dns->h_length);
     sain.sin_family = AF_INET;
-    sain.sin_port = htons(80);
-    sain.sin_addr.s_addr = *((unsigned long*)(net_gethostbyname(HTTP)->h_addr_list[0]));
+    sain.sin_port = htons(80); // 443 for SSL
+
+    // For data transmission, we need a socket. A working one, of course.
+    s32 sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if (sock == INVALID_SOCKET) {
+        std::cout << "Socket failure: " << sock << std::endl;
+        return 4;
+    }
 
     std::cout << "Connecting to the server..." << std::endl;
-    int result = net_connect(sock, (struct sockaddr*)&sain, sizeof(sain));
+    s32 result = net_connect(sock, (struct sockaddr*)&sain, sizeof(sain));
     if (result < 0) {
         std::cout << "Couldn't connect to server." << std::endl;
         return 5;
     }
+
+/* Notice: SSL is pretty much broken due to missing certs, so I commented it out
+
+
+    error = SSL::Init();
+    if (error < 0) {
+        std::cout << "[1/3] Couldn't initialize SSL: " << error << std::endl;
+        net_close(sock);
+        return 6;
+    }
+
+    s32 context = SSL::New((u8*)HTTP, 0);
+    if (context < 0) {
+        std::cout << "[2/3] Couldn't initialize SSL: " << context << std::endl;
+        net_close(sock);
+        return 6;
+    }
+
+    error = SSL::SetBuiltInClientCert(context, 0);
+    if (error < 0) {
+        std::cout << "[3/3] Couldn't initialize SSL: " << error << std::endl;
+        SSL::Shutdown(context);
+        net_close(sock);
+        return 6;
+    }    
+
+    std::cout << "Establishing encrypted connection..." << std::endl;
+    error = SSL::Connect(context, sock);
+    if (error < 0) {
+        std::cout << "Couldn't connect: " << error << std::endl;
+        SSL::Shutdown(context);
+        net_close(sock);
+        return 7;
+    }
+
+    std::cout << "Adding certificates to memory..." << std::endl;
+    error = SSL::SetRootCA(context, (void*)CA, sizeof(CA)); // replace CA with cert
+    if (error < 0) {
+        std::cout << "Couldn't insert certificates: " << error << std::endl;
+        SSL::Shutdown(context);
+        net_close(sock);
+        return 7;
+    }
+
+    error = SSL::Handshake(context);
+    if (error < 0) {
+        std::cout << "Handshake failure: " << error << std::endl;
+        SSL::Shutdown(context);
+        net_close(sock);
+        return 7;
+    }
+
+    std::cout << "Sending data..." << std::endl;
+    error = SSL::Write(context, request_text, strlen(request_text));
+    if (error < 0) {
+        std::cout << "Couldn't send the data: " << error << std::endl;
+        SSL::Shutdown(context);
+        net_close(sock);
+        return 8;
+    }
+
+    std::cout << "Data sent. Reading response..." << std::endl;
+    char buffer[256];
+    error = SSL::Read(context, buffer, 256);
+    if (error < 0) {
+        std::cout << "Couldn't read the response: " << error << std::endl;
+        SSL::Shutdown(context);
+        net_close(sock);
+        return 8;
+    }
+
+    SSL::Shutdown(context);
+*/
 
     std::cout << "Connected to the server. Sending data..." << std::endl;
     net_send(sock, request_text, strlen(request_text), 0);
@@ -116,7 +198,9 @@ s32 Patcher::Mail() {
     std::cout << "Data received. Parsing..." << std::endl;
 
     net_shutdown(sock, 0);
-    net_close(sock);    
+    net_close(sock);
+
+    std::cout << "Data received. Parsing..." << std::endl;
 
     int responseCode = RESPONSE_NOTINIT; // cd
     char responseMlchkid[0x24]; // mlchkid
