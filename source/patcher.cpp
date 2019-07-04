@@ -6,6 +6,7 @@
 
 #include "config.hpp"
 #include "nand.hpp"
+#include "ssl.hpp"
 #include "patcher.hpp"
 
 unsigned int Patcher::Checksum(char* buffer, int length) {
