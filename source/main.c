@@ -35,6 +35,11 @@ int main(int argc, char** argv) {
     VIDEO_WaitVSync();
     if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
+	printf("\n:------------------------------------------------:\n");
+	printf(": RiiConnect24 Mail Patcher - (C) Spotlight v1.2 :\n: Compiled on 2020/08/02 at 7:14PM               :\n");
+	printf(":------------------------------------------------:\n");
+
+	printf("Connecting to the Internet... OK\n");
     // The console understands VT terminal escape codes
     // This positions the cursor on row 2, column 0
     // we can use variables for this with format codes too
@@ -155,7 +160,7 @@ int main(int argc, char** argv) {
     // for (int i = 0; i < sizeof(tst); i++)
     //   printf("%.2x", tst[i]);
 
-    printf("\n\nRunning...\n\n\n\n\n");
+    printf("\nPatching...\n\n");
 
     s32 systemVersion = getSystemMenuVersion();
 
@@ -167,14 +172,20 @@ int main(int argc, char** argv) {
             printf("RiiConnect24 works best on 4.3 (if you update, please repatch!)\nThe "
                    "installer will continue.\n");
         }
-
+	s64 friendCode = getFriendCode();
         s32 error = patchMail();
         if (error == RESPONSE_AREGISTERED) {
-          printf("If your previous registration failed, please\ncontact a developer at support@riiconnect24.net.\n");
+          printf("\nIf your previous registration failed, please contact us using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
+		  printf("\nIf you're repatching, contact us and provide this info:\n");
+		  printf("\nYour friend code: w");
+		  printf("%016llu\n", friendCode);
         } else if (error != 0) {
-          printf("An error occurred! Please send a screenshot of this error message\nto a developer or at support@riiconnect24.net.\n");
+          printf("There was an error while patching.\nPlease make a screenshot of this error message and send it\nto a developer.\n");
+		  printf("\nContact using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
+		  printf("\nYour friend code: w");
+		  printf("%016llu\n", friendCode);
         } else {
-          printf("Finished!\nPress HOME to exit.\n");
+          printf("All done, all done!\nPress HOME to exit.\n");
         }
     }
 

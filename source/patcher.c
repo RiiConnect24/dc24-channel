@@ -114,7 +114,9 @@ s32 patchMail() {
 
     s32 error = NAND_ReadFile("/shared2/wc24/nwc24msg.cfg", fileBufferNWC24MSG, 0x400);
     if (error < 0) {
-        printf("The nwc24msg.cfg file couldn't be read\n");
+        printf(":-----------------------------------------:\n");
+        printf(": The nwc24msg.cfg file couldn't be read. :\n");
+        printf(":-----------------------------------------:\n\n");
         return error;
     }
     memcpy(&fileUnionNWC24MSG, fileBufferNWC24MSG, 0x400);
@@ -129,14 +131,18 @@ s32 patchMail() {
         return -1;
     }
     if (oldChecksum != calculatedChecksum) {
-        printf("The checksum isn't corresponding\n");
+        printf(":-----------------------------------------:\n");
+        printf(": The checksum isn't corresponding.       :\n");
+        printf(":-----------------------------------------:\n\n");
         return -1;
     }
 
     // Get the friend code
     s64 fc = fileUnionNWC24MSG.structNWC24MSG.friendCode;
     if (fc < 0) {
-        printf("Invalid Friend Code: %lli\n", fc);
+        printf(":-----------------------------------------:\n");
+        printf(" Invalid Friend Code: %lli\n", fc);
+        printf(":-----------------------------------------:\n\n");
         return fc;
     }
 
@@ -144,8 +150,24 @@ s32 patchMail() {
     char response[2048] = "";
     sprintf(response, "mlid=w%016lli", fc);
     error = postRequest(BASE_HTTP_URL, "/cgi-bin/patcher.cgi", 80, &response, sizeof(response));
-    if (error < 0) {
-        printf("Couldn't request the data: %li\n", error);
+    
+	// 
+	if (error == -24) {
+		printf(":--------------------------------------------------------:");
+		printf("\n: There is no Internet connection.                       :");
+		printf("\n: Please check if your Wii is connected to the Internet. :");
+		printf("\n:                                                        :");
+		printf("\n: Could not reach remote host.                           :");
+		printf("\n:--------------------------------------------------------:\n\n");
+		
+	}
+	if (error < 0) {
+		return error;
+	}
+	if (error < 0 && error != -24) {
+        printf(":-----------------------------------------:\n");
+        printf(" Couldn't request the data: %li\n", error);
+        printf(":-----------------------------------------:\n\n");
         return error;
     }
 
@@ -179,15 +201,21 @@ s32 patchMail() {
     // Check the response code
     switch (responseCode) {
     case RESPONSE_INVALID:
-        printf("Invalid friend code\n");
+		printf(":-----------------------------------------:\n");
+		printf(": Invalid friend code.                    :\n");
+        printf(":-----------------------------------------:\n");
         return 1;
         break;
     case RESPONSE_AREGISTERED:
-        printf("Already registered\n");
+        printf(":----------------------------------------------------:\n");
+        printf(": Your Wii's Friend Code is already in our database. :\n");
+        printf(":----------------------------------------------------:\n");
         return RESPONSE_AREGISTERED;
         break;
     case RESPONSE_DB_ERROR:
-        printf("Server database error.");
+        printf(":-----------------------------------------:\n");
+        printf(": Server database error. Try again later. :\n");
+        printf(":-----------------------------------------:\n");
         return 1;
         break;
     case RESPONSE_OK:
@@ -196,13 +224,15 @@ s32 patchMail() {
             return 1;
         } else {
             // Patch the nwc24msg.cfg file
-            printf("before:%s\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
+            printf("Domain before: %s\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
             patchNWC24MSG(&fileUnionNWC24MSG, responsePasswd, responseMlchkid);
-            printf("after:%s\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
+            printf("Domain after: %s\n\n", fileUnionNWC24MSG.structNWC24MSG.mailDomain);
 
             error = NAND_WriteFile("/shared2/wc24/nwc24msg.cfg", fileUnionNWC24MSG.charNWC24MSG, 0x400, false);
             if (error < 0) {
-                printf("The nwc24msg.cfg file couldn't be updated.\n");
+			printf(":--------------------------------------------:\n");
+			printf(": The nwc24msg.cfg file couldn't be updated. :\n");
+			printf(":--------------------------------------------:\n\n");
                 return error;
             }
             return 0;
