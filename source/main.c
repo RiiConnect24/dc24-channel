@@ -41,125 +41,16 @@ int main(int argc, char** argv) {
 	printf(":------------------------------------------------:\n");
 
 	printf("Connecting to the Internet... OK\n");
-    // The console understands VT terminal escape codes
-    // This positions the cursor on row 2, column 0
-    // we can use variables for this with format codes too
-    // e.g. printf ("\x1b[%d;%dH", row, column );
-    // textPos(2, 2);
-    //
-    // printf("===Network status===");
-    //
-    // if (initNetwork()) {
-    // 	textPos(2, 4);
-    // 	printf("Connected, yay!");
-    //
-    // 	char ipAddress[16] = "";
-    //   char netmask[16] = "";
-    //   char gateway[16] = "";
-    //
-    // 	s32 error = if_config(ipAddress, netmask, gateway, true, 50);
-    //
-    // 	textPos(2, 5);
-    //
-    // 	if (error >= 0) {
-    // 		printf("IP: %s, NM: %s, GW: %s", ipAddress, netmask, gateway);
-    //
-    //   	textPos(0, 6);
-    //
-    //     char response[2048];
-    //     getRequest("rc24.xyz", "/robots.txt", 443, &response, sizeof(response));
-    //     printf("%s\n", response);
-    // 	} else {
-    // 		printf("An error has occured while trying to get the network data, wooooops :/");
-    // 	}
-    //
-    // } else {
-    // 	printf("Not connected :/");
-    // }
 
-    // textPos(24, 0);
-    // printf("===NAND Access & Network Test===\n\n");
-
-    // if (initNetwork()) {
-    //   printf("Connected, making the request...\n");
-    //
-    //   char response[2048];
-    //   if (getRequest("rc24.xyz", "/robots.txt", 443, &response, sizeof(response)) >= 0) {
-    //     printf("Request successful !\n");
-    //
-    //     s32 file = ISFS_Open("/shared2/wc24/teste.txt", ISFS_OPEN_RW);
-    //     printf("ISFS_Open: %li\n", file);
-    //
-    //     error = ISFS_Write(file, response, strlen(response));
-    //     printf("ISFS_Write: %li\n", error);
-    //
-    //     error = ISFS_Close(file);
-    //     printf("ISFS_Close: %li\n", error);
-    //   } else {
-    //     printf("Request error !\n");
-    //   }
-    // } else {
-    //   printf("Couldn't connect to internet !\n");
-    // }
-
-    // static char buffer[1024] = "";
-    // BYTE sha256[SHA256_BLOCK_SIZE];
-    // NAND_ReadFile("/shared2/wc24/nwc24msg.cfg", buffer, 1024);
-    // calcSHA256(sha256, buffer, 1024);
-    //
-    // for (int i = 0; i < SHA256_BLOCK_SIZE; i++)
-    //   printf("%.1x", sha256[i]);xdelta3
-
-    // s64 fc = getFriendCode();
-    // char fcChar[16];
-    // sprintf(fcChar, "%lli", fc);
-    // textPos(21, 14);
-    // printf("Your Wii Number is ");
-    // for (int i = 0; i < 4; i++) {
-    //   char separate[5] = "";
-    //   memcpy(&separate, fcChar + (4 * i), 0x4);
-    //   printf("%s", separate);
-    //
-    //   if (i < 3)
-    //     printf("-");
-    // }
-    // printf("\n");
-    // textPos(23, 16);
-    // printf("Press HOME/START to return to HSC.\n");
-
-    // static u8 buffer[6] = "";
-    // s32 error = NAND_ReadFile("/test.txt", buffer, 6);
-    // printf("ReadFile1: %li\n", error);
-    //
-    //   for (int i = 0; i < sizeof(buffer); i++)
-    //     printf("%x", buffer[i]);
-    //
-    //   printf("\n");
-    //
-    // static u8 patchf[41] = "";
-    // error = NAND_ReadFile("/wfs/slt", patchf, 41);
-    // printf("ReadFile2: %li\n", error);
-    //
-    // for (int i = 0; i < sizeof(patchf); i++)
-    //   printf("%x", patchf[i]);
-    //
-    // printf("\n");
-    //
-    // uint8_t patchedOutput[6];
-    // memset(patchedOutput, 0, 6);
-    // usize_t gotOutput = 0;
-    // // uint8_t diff[] = {0xD6, 0xC3, 0xC4, 0x00, 0x05, 0x02, 0x10, 0x74, 0x2E, 0x74, 0x78, 0x74,
-    // 0x2F, 0x2F, 0x74, 0x65, 0x73, 0x74, 0x2E, 0x74, 0x78, 0x74, 0x2F, 0x04, 0x10, 0x06, 0x00,
-    // 0x06, 0x01, 0x00, 0x08, 0x7A, 0x02, 0x28, 0x73, 0x61, 0x6C, 0x69, 0x74, 0x0A, 0x07};
-    // // uint8_t origin[] = {0x73, 0x61, 0x6C, 0x75, 0x74, 0x0A};
-    // // uint8_t changed[] = {0x73, 0x61, 0x6C, 0x69, 0x74, 0x0A};
-    // uint8_t tst[64] = "";
-    // int errInt = xd3_decode_memory(patchf, 39, buffer, 6, tst, &gotOutput, 64, 0);
-    // // int errInt = xd3_encode_memory(buffer, 6, patchf, 6, tst, &gotOutput, 1024, 0);
-    // printf("decode: %i\n", errInt);
-    //
-    // for (int i = 0; i < sizeof(tst); i++)
-    //   printf("%.2x", tst[i]);
+    if (isDolphin())
+    {
+        printf(":---------------------------------------------------------------:\n"
+               ": Dolphin is not supported!                                     :\n"
+               ": This tool can only run on a real Nintendo Wii Console.        :\n"
+               ":---------------------------------------------------------------:\n");
+        sleep(5);
+        exit(0);
+    }
 
     printf("\nPatching...\n\n");
 
@@ -180,14 +71,6 @@ int main(int argc, char** argv) {
 		  printf("\nIf you're repatching, contact us and provide this info:\n");
 		  printf("\nYour friend code: w");
 		  printf("%016llu\n", friendCode);
-        } else if (friendCode == 0000000000000000) { // Detect dolphin and don't patch
-              printf("\033[3A:---------------------------------------------------------------:\n"
-                            ": Dolphin is not supported!                                     :\n"
-                            ": This tool can only run on a real Nintendo Wii Console.        :\n"
-                            ":---------------------------------------------------------------:\n");
-              sleep(5);
-              exit(0);
-        } else if (error != 0) {
           printf("There was an error while patching.\nPlease make a screenshot of this error message and send it\nto a developer.\n");
 		  printf("\nContact using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
 		  printf("\nYour friend code: w");

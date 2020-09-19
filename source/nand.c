@@ -3,6 +3,15 @@
 
 static bool isNANDInitialised = false;
 
+bool isDolphin(void) {
+    s32 checkDolphin;
+    checkDolphin = IOS_Open("/dev/dolphin", IPC_OPEN_NONE);
+    if (checkDolphin >= 0) 
+        return true;
+    else 
+        return false;
+}
+
 s32 NAND_Init() {
     s32 error = ISFS_Initialize();
 
