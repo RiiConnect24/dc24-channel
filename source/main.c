@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wiiuse/wpad.h>
+#include <unistd.h>
 
 #include "nand.h"
 #include "network.h"
@@ -179,6 +180,13 @@ int main(int argc, char** argv) {
 		  printf("\nIf you're repatching, contact us and provide this info:\n");
 		  printf("\nYour friend code: w");
 		  printf("%016llu\n", friendCode);
+        } else if (friendCode == 0000000000000000) { // Detect dolphin and don't patch
+              printf("\033[3A:---------------------------------------------------------------:\n"
+                            ": Dolphin is not supported!                                     :\n"
+                            ": This tool can only run on a real Nintendo Wii Console.        :\n"
+                            ":---------------------------------------------------------------:\n");
+              sleep(5);
+              exit(0);
         } else if (error != 0) {
           printf("There was an error while patching.\nPlease make a screenshot of this error message and send it\nto a developer.\n");
 		  printf("\nContact using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
