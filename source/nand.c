@@ -12,6 +12,23 @@ bool isDolphin(void) {
         return false;
 }
 
+
+bool CheckvWii (void) { // Function taken from priiloader
+	s32 ret;
+	u32 x;
+
+	//check if the vWii NandLoader is installed ( 0x200 & 0x201)
+	ret = ES_GetTitleContentsCount(0x0000000100000200ll, &x);
+
+	if (ret < 0)
+		return false; // title was never installed
+
+	if (x <= 0)
+		return false; // title was installed but deleted via Channel Management
+
+	return true;
+}
+
 s32 NAND_Init() {
     s32 error = ISFS_Initialize();
 

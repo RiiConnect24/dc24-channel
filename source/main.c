@@ -19,7 +19,7 @@ static GXRModeObj* rmode = NULL;
 
 //---------------------------------------------------------------------------------
 int main(int argc, char** argv) {
-    //---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
 
     VIDEO_Init();
     WPAD_Init();
@@ -42,16 +42,20 @@ int main(int argc, char** argv) {
 
 	printf("Connecting to the Internet... OK\n");
 
-    if (isDolphin())
-    {
+    if (isDolphin()) {
         printf(":---------------------------------------------------------------:\n"
                ": Dolphin is not supported!                                     :\n"
                ": This tool can only run on a real Nintendo Wii Console.        :\n"
                ":---------------------------------------------------------------:\n");
         sleep(5);
         exit(0);
+    } else if (CheckvWii()){
+        printf(":---------------------------------------------------------------:\n"
+               ": vWii Detected                                                 :\n"
+               ": This tool will still patch your nwc24msg.cfg, but you will be :\n"
+               ": Unable to fully utilize Wii mail                              :\n" 
+               ":---------------------------------------------------------------:\n");
     }
-
     printf("\nPatching...\n\n");
 
     s32 systemVersion = getSystemMenuVersion();

@@ -10,6 +10,7 @@ s32 NAND_Init();
 s32 NAND_Exit();
 
 bool isDolphin(void);
+bool CheckvWii(void);
 
 bool NAND_IsFilePresent(const char *filePath);
 s32 NAND_ReadFile(const char *filePath, void *buffer, u32 bufferLength);
