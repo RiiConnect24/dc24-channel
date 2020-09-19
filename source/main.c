@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
 	printf("\n:------------------------------------------------:\n");
-	printf(": RiiConnect24 Mail Patcher - (C) Spotlight v1.2 :\n: Compiled on 2020/09/19 at 6:44PM               :\n");
+	printf(": RiiConnect24 Mail Patcher - (C) Spotlight v1.3 :\n: Compiled on 2020/09/19 at 9:13PM               :\n");
 	printf(":------------------------------------------------:\n");
 
 	printf("Connecting to the Internet... OK\n");
