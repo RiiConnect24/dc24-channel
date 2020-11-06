@@ -11,9 +11,6 @@
 #include "network.h"
 #include "patcher.h"
 
-#define textPos(x, y) printf("\x1b[%d;%dH", y, x)
-#define htons(x) (x)
-
 static void* xfb = NULL;
 static GXRModeObj* rmode = NULL;
 
@@ -36,28 +33,30 @@ int main(int argc, char** argv) {
     VIDEO_WaitVSync();
     if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
-	printf("\n:--------------------------------------------------:\n");
-	printf("  RiiConnect24 Mail Patcher - (C) Spotlight v1.3\n  Compiled on %s", __DATE__);
-	printf(" at %s\n", __TIME__);
-	printf(":--------------------------------------------------:\n\n");
+    printf("\n:------------------------------------------------:\n");
+    printf(": RiiConnect24 Mail Patcher - (C) Spotlight v1.3 :\n");
+    printf(": Compiled on " __DATE__ " at " __TIME__ "            :\n");
+    printf(":------------------------------------------------:\n");
 
 	printf("Running...\n\n");
 
     if (isDolphin()) {
-        printf(":---------------------------------------------------------------:\n"
-               ": Dolphin is not supported!                                     :\n"
-               ": This tool can only run on a real Nintendo Wii Console.        :\n"
-               ":                                                               :\n"
-               ": Exiting in 5 seconds...                                       :\n"
-               ":---------------------------------------------------------------:\n");
+        printf(":------------------------------------------------:\n"
+               ": Dolphin is not supported!                      :\n"
+               ": This tool can only run on a real               :\n"
+               ": Nintendo Wii Console.                          :\n"
+               ":                                                :\n"
+               ": Exiting in 5 seconds...                        :\n"
+               ":------------------------------------------------:\n");
         sleep(5);
         exit(0);
     } else if (CheckvWii()){
-        printf(":---------------------------------------------------------------:\n"
-               ": vWii Detected                                                 :\n"
-               ": This tool will still patch your nwc24msg.cfg, but you will be :\n"
-               ": Unable to fully utilize Wii mail                              :\n" 
-               ":---------------------------------------------------------------:\n");
+        printf(":------------------------------------------------:\n"
+               ": vWii Detected                                  :\n"
+               ": This tool will still patch your nwc24msg.cfg,  :\n"
+               ": but you will be unable to                      :\n"
+               ": fully utilize Wii mail                         :\n"
+               ":------------------------------------------------:\n");
     }
     printf("\nPatching...\n\n");
 
