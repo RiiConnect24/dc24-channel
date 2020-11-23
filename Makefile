@@ -30,6 +30,12 @@ CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
+ifeq ($(GITHUB_ACTIONS),true)
+SHA = $(GITHUB_SHA)
+CFLAGS += -DCOMMITHASH='"$(shell echo "$(SHA)" | cut -c 1-8)"'
+CXXFLAGS += -DCOMMITHASH='"$(shell echo "$(SHA)" | cut -c 1-8)"'
+endif
+
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
