@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
         printf(":---------------------------------------------------------------:\n"
                ": Dolphin is not supported!                                     :\n"
                ": This tool can only run on a real Nintendo Wii Console.        :\n"
+               ":                                                               :\n"
+               ": Exiting in 5 seconds...                                       :\n"
                ":---------------------------------------------------------------:\n");
         sleep(5);
         exit(0);
