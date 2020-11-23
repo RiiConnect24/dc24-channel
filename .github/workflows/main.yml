@@ -6,45 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    container: devkitpro/devkitppc
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Cache
-        id: cache-1
-        uses: actions/cache@v2
-        with:
-          path: cache
-          key: ${{ runner.os }}-cache-1
-
-      - name: Download devkitPPC r37, libogc, general-tools and others
-        if: steps.cache-1.outputs.cache-hit != 'true'
-        run: | 
-          mkdir cache && cd cache
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/devkitPPC-r37-4-linux.pkg.tar.xz"
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/libogc-2.1.0-1-any.pkg.tar.xz"
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/general-tools-1.2.0-1-linux.pkg.tar.xz"
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/gamecube-tools-1.0.2-1-linux.pkg.tar.xz"
-          
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/wii_rules"
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/base_tools"
-          wget "https://patcher.rc24.xyz/update/Mail-Patcher/base_rules"
-          
-          cd ..
-      - name: Extract devkitPPC r37, libogc, general-tools and gamecube-tools
-        run: | 
-          tar -xf cache/devkitPPC-r37-4-linux.pkg.tar.xz opt/devkitpro/devkitPPC --strip-components=1
-          tar -xf cache/libogc-2.1.0-1-any.pkg.tar.xz opt/devkitpro/libogc --strip-components=1
-          tar -xf cache/general-tools-1.2.0-1-linux.pkg.tar.xz opt/devkitpro/tools/bin/bin2s --strip-components=4
-          sudo cp bin2s /usr/local/bin/bin2s
-          tar -xf cache/gamecube-tools-1.0.2-1-linux.pkg.tar.xz opt/devkitpro/tools/bin/elf2dol --strip-components=4
-          sudo cp elf2dol /usr/local/bin/elf2dol
-          
-          cp cache/wii_rules /home/runner/work/Mail-Patcher/Mail-Patcher/devkitpro/devkitPPC/wii_rules
-          cp cache/base_tools /home/runner/work/Mail-Patcher/Mail-Patcher/devkitpro/devkitPPC/base_tools
-          cp cache/base_rules /home/runner/work/Mail-Patcher/Mail-Patcher/devkitpro/devkitPPC/base_rules
-      - name: Compile
-        run: |
-          PATH=$(pwd)/devkitpro/devkitPPC/bin:$PATH DEVKITPPC=$(pwd)/devkitpro/devkitPPC DEVKITPRO=$(pwd)/devkitpro make
+      - uses: actions/checkout@v1
+      - name: Build
+        run: make
       - name: Package
         run: |
           mkdir -p apps/Mail-Patcher/
@@ -55,6 +21,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with: 
           name: Mail-Patcher
-          path: |
-            apps
-            
+          path: apps
