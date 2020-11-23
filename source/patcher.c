@@ -166,7 +166,7 @@ s32 patchMail() {
 	}
 	if (error < 0 && error != -24) {
         printf(":-----------------------------------------:\n");
-        printf(" Couldn't request the data: %li\n", error);
+        printf(" Couldn't request the data: %i\n", error);
         printf(":-----------------------------------------:\n\n");
         return error;
     }

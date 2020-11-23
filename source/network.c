@@ -4,7 +4,7 @@
 s32 doRequest(const void* hostname, const void* path, const u16 port, void* buffer, u32 length, const char* requestType) {
     s32 error = net_get_status();
     if (error < 0) {
-        printf("net_get_status: %li\n", error);
+        printf("net_get_status: %i\n", error);
         return error;
     }
 
@@ -38,21 +38,21 @@ Cache-Control: no-cache\r\n\r\n%s",
     if (port == 443) {
         error = ssl_init();
         if (error < 0) {
-            printf("ssl_init: error %li", error);
+            printf("ssl_init: error %i", error);
             net_close(sock);
             return error;
         }
 
         s32 sslContext = ssl_new((u8*)hostname, 0);
         if (sslContext < 0) {
-            printf("ssl_new: error %li\n", error);
+            printf("ssl_new: error %i\n", error);
             net_close(sock);
             return error;
         }
 
         error = ssl_setbuiltinclientcert(sslContext, 0);
         if (error < 0) {
-            printf("ssl_setbuiltinclientcert: error %li\n", error);
+            printf("ssl_setbuiltinclientcert: error %i\n", error);
             ssl_shutdown(sslContext);
             net_close(sock);
             return error;
@@ -60,7 +60,7 @@ Cache-Control: no-cache\r\n\r\n%s",
 
         error = ssl_connect(sslContext, sock);
         if (error < 0) {
-            printf("ssl_connect: error %li\n", error);
+            printf("ssl_connect: error %i\n", error);
             ssl_shutdown(sslContext);
             net_close(sock);
             return error;
@@ -68,7 +68,7 @@ Cache-Control: no-cache\r\n\r\n%s",
 
         error = ssl_handshake(sslContext);
         if (error < 0) {
-            printf("ssl_handshake: error %li\n", error);
+            printf("ssl_handshake: error %i\n", error);
             ssl_shutdown(sslContext);
             net_close(sock);
             return error;
@@ -76,7 +76,7 @@ Cache-Control: no-cache\r\n\r\n%s",
 
         error = ssl_write(sslContext, request, sizeof(request));
         if (error < 0) {
-            printf("ssl_write: error %li\n", error);
+            printf("ssl_write: error %i\n", error);
             ssl_shutdown(sslContext);
             net_close(sock);
             return error;
@@ -84,7 +84,7 @@ Cache-Control: no-cache\r\n\r\n%s",
 
         error = ssl_read(sslContext, response, length);
         if (error < 0) {
-            printf("ssl_read: error %li\n", error);
+            printf("ssl_read: error %i\n", error);
             ssl_shutdown(sslContext);
             net_close(sock);
             return error;
@@ -94,14 +94,14 @@ Cache-Control: no-cache\r\n\r\n%s",
     } else {
         error = net_send(sock, request, sizeof(request), 0);
         if (error < 0) {
-            printf("net_send: error %li\n", error);
+            printf("net_send: error %i\n", error);
             net_close(sock);
             return error;
         }
 
         error = net_recv(sock, response, length, 0);
         if (error < 0) {
-            printf("net_recv: error %li\n", error);
+            printf("net_recv: error %i\n", error);
             net_close(sock);
             return error;
         }
