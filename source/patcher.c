@@ -149,7 +149,7 @@ s32 patchMail() {
     // Request for a passwd/mlchkid
     char response[2048] = "";
     sprintf(response, "mlid=w%016lli", fc);
-    error = postRequest(BASE_HTTP_URL, "/cgi-bin/patcher.cgi", 80, &response, sizeof(response));
+    error = postRequest(BASE_PATCH_URL, "/cgi-bin/patcher.cgi", 80, &response, sizeof(response));
     
 	// 
 	if (error == -24) {
@@ -181,7 +181,7 @@ s32 patchMail() {
     char responseMlchkid[0x24] = "";
     char responsePasswd[0x20] = "";
 
-    for (int i = 0; i != num_headers; ++i) {
+    for (int i = 0; i <= num_headers; ++i) {
         char* currentHeaderName;
         currentHeaderName = malloc((int)headers[i].name_len);
         sprintf(currentHeaderName, "%.*s", (int)headers[i].name_len, headers[i].name);
@@ -192,10 +192,10 @@ s32 patchMail() {
 
         if (strcmp(currentHeaderName, "cd") == 0)
             responseCode = atoi(currentHeaderValue);
-        else if (strcmp(currentHeaderName, "mlchkid") == 0)
-            memcpy(&responseMlchkid, currentHeaderValue, 0x24);
         else if (strcmp(currentHeaderName, "passwd") == 0)
             memcpy(&responsePasswd, currentHeaderValue, 0x20);
+        else if (strcmp(currentHeaderName, "mlchkid") == 0)
+            memcpy(&responseMlchkid, currentHeaderValue, 0x24);
     }
 
     // Check the response code
