@@ -181,7 +181,7 @@ s32 patchMail() {
     char responseMlchkid[0x24] = "";
     char responsePasswd[0x20] = "";
 
-    for (int i = 0; i <= num_headers; ++i) {
+    for (int i = 0; i != num_headers; ++i) {
         char* currentHeaderName;
         currentHeaderName = malloc((int)headers[i].name_len);
         sprintf(currentHeaderName, "%.*s", (int)headers[i].name_len, headers[i].name);
