@@ -36,16 +36,16 @@ int main(int argc, char** argv) {
     VIDEO_WaitVSync();
     if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
-	char version_major = 1;
-	char version_minor = 3;
-        char version_minor_minor = 1;
+		char version_major = 1;
+		char version_minor = 3;
+        char version_patch = 1;
 
 	printf("\n:---------------------------------------------------------:\n");
 	printf("  RiiConnect24 Mail Patcher - (C) RiiConnect24 ");
 	#ifdef COMMITHASH
-		printf("v%u.%u.%u-%s\n", version_major, version_minor, version_minor_minor, COMMITHASH);
+		printf("v%u.%u.%u-%s\n", version_major, version_minor, version_patch, COMMITHASH);
 	#else
-		printf("v%u.%u.%u\n", version_major, version_minor, version_minor_minor);
+		printf("v%u.%u.%u\n", version_major, version_minor, version_patch);
         #endif
         printf("  Compiled on %s at %s\n", __DATE__ , __TIME__);
 	printf(":---------------------------------------------------------:\n\n");
