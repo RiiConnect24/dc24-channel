@@ -94,8 +94,15 @@ void patchNWC24MSG(unionNWC24MSG* unionFile, char passwd[0x20], char mlchkid[0x2
     const char engines[0x5][0x80] = { "account", "check", "receive", "delete", "send" };
     for (int i = 0; i < 5; i++) {
         char formattedLink[0x80] = "";
+        for (int i = 0; i < sizeof(formattedLink); i++)
+        {
+            formattedLink[i] = '\0';
+        }
+        strncpy(unionFile->structNWC24MSG.urls[i], formattedLink, sizeof(formattedLink));
+    }
+    for (int i = 0; i < 5; i++) {
+        char formattedLink[0x80] = "";
         sprintf(formattedLink, "http://%s/cgi-bin/%s.cgi", BASE_HTTP_URL, engines[i]);
-
         strcpy(unionFile->structNWC24MSG.urls[i], formattedLink);
     }
 
@@ -166,7 +173,7 @@ s32 patchMail() {
 	}
 	if (error < 0 && error != -24) {
         printf(":-----------------------------------------:\n");
-        printf(" Couldn't request the data: %li\n", error);
+        printf(" Couldn't request the data: %i\n", error);
         printf(":-----------------------------------------:\n\n");
         return error;
     }
@@ -192,10 +199,10 @@ s32 patchMail() {
 
         if (strcmp(currentHeaderName, "cd") == 0)
             responseCode = atoi(currentHeaderValue);
-        else if (strcmp(currentHeaderName, "passwd") == 0)
-            memcpy(&responsePasswd, currentHeaderValue, 0x20);
         else if (strcmp(currentHeaderName, "mlchkid") == 0)
             memcpy(&responseMlchkid, currentHeaderValue, 0x24);
+        else if (strcmp(currentHeaderName, "passwd") == 0)
+            memcpy(&responsePasswd, currentHeaderValue, 0x20);
     }
 
     // Check the response code
