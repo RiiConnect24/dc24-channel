@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-	<app version="1.1">
+	<app version="1.3.1">
 		<name>RiiConnect24 Mail Patcher</name>
-		<coder>Spotlight</coder>
-		<version>v1.3</version>
-		<release_date>201804210000</release_date>
+		<coder>RiiConnect24</coder>
+		<version>v1.3.1</version>
+		<release_date>202011280000</release_date>
 		<short_description>Patches your nwc24msg.cfg to use Wii Mail!</short_description>
 		<long_description>This tool will patch your nwc24msg.cfg file to use Wii Mail with RiiConnect24. It will only take a couple seconds and makes the whole process easy.
 
