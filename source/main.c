@@ -75,9 +75,7 @@ int main(int argc, char** argv) {
     s64 friendCode = getFriendCode();
     s32 error = patchMail();
     if (error == RESPONSE_AREGISTERED) {
-        printf("Your Wii Number is already registered in our database.");
-        printf("\nIf your previous registration failed or if you're repatching, please contact us using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
-        printf("\nIf you have successfully ran this mail patcher before, you likely won't need to patch again unless you're having problems.");
+        printf("If your previous registration failed or if you're repatching, please contact us using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
         printf("\nAlso, please send us your Wii Number: w");
         printf("%016llu\n", friendCode);
     } else if (error != 0) {
