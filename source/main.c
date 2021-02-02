@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
 		char version_major = 1;
 		char version_minor = 3;
-        char version_patch = 1;
+        char version_patch = 2;
 
 	printf("\n:---------------------------------------------------------:\n");
 	printf("  RiiConnect24 Mail Patcher - (C) RiiConnect24 ");
@@ -50,19 +50,19 @@ int main(int argc, char** argv) {
         printf("  Compiled on %s at %s\n", __DATE__ , __TIME__);
 	printf(":---------------------------------------------------------:\n\n");
 
-	printf("Running...\n\n");
+	printf("Running...\n");
 
     if (isDolphin()) {
-        printf(":---------------------------------------------------------------:\n"
+        printf("\n:---------------------------------------------------------------:\n"
                ": Dolphin is not supported!                                     :\n"
                ": This tool can only run on a real Wii Console.                 :\n"
                ":                                                               :\n"
-               ": Exiting in 5 seconds...                                       :\n"
+               ": Exiting in 10 seconds...                                       :\n"
                ":---------------------------------------------------------------:\n");
-        sleep(5);
+        sleep(10);
         exit(0);
     } else if (CheckvWii()){
-        printf(":---------------------------------------------------------------:\n"
+        printf("\n:---------------------------------------------------------------:\n"
                ": vWii Detected                                                 :\n"
                ": This tool will still patch your nwc24msg.cfg, but you will be :\n"
                ": unable to fully utilize Wii Mail.                             :\n" 
@@ -78,7 +78,11 @@ int main(int argc, char** argv) {
         printf("If your previous registration failed or if you're repatching, please contact us using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
         printf("\nAlso, please send us your Wii Number: w");
         printf("%016llu\n", friendCode);
-    } else if (error != 0) {
+    } else if (error == -128) {
+		printf("We're probably performing maintenance or having some issues. Hang tight!\n\nMake sure to check the status page that is linked above for more info.\n\n");
+		printf("\nContact info:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
+		printf("\nPress the HOME Button to exit.");
+	} else if (error != 0) {
         printf("There was an error while patching.\nPlease make a screenshot of this error message and send it\nto a developer.\n");
         printf("\nPlease contact us using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
         printf("\nAlso, please send us your Wii Number: w");

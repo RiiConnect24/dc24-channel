@@ -93,7 +93,18 @@ Cache-Control: no-cache\r\n\r\n%s",
         ssl_shutdown(sslContext);
     } else {
         error = net_send(sock, request, sizeof(request), 0);
-        if (error < 0) {
+        
+		if (error == -128) {
+		printf(":--------------------------------------------------------:");
+		printf("\n: RiiConnect24 Servers are currently offline.            :");
+		printf("\n: Please check back later!                               :");
+		printf("\n:                                                        :");
+		printf("\n: Visit https://status.rc24.xyz for more info.           :");
+		printf("\n:--------------------------------------------------------:\n\n");
+		return error;
+		}
+		
+		if (error < 0) {
             printf("net_send: error %i\n", error);
             net_close(sock);
             return error;
