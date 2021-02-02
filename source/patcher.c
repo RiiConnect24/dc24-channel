@@ -210,13 +210,13 @@ s32 patchMail() {
     case RESPONSE_INVALID:
 		printf(":-----------------------------------------:\n");
 		printf(": Invalid friend code.                    :\n");
-        printf(":-----------------------------------------:\n");
+        printf(":-----------------------------------------:\n\n");
         return 1;
         break;
     case RESPONSE_AREGISTERED:
         printf(":----------------------------------------------------:\n");
         printf(": Your Wii's Friend Code is already in our database. :\n");
-        printf(":----------------------------------------------------:\n");
+        printf(":----------------------------------------------------:\n\n");
         return RESPONSE_AREGISTERED;
         break;
     case RESPONSE_DB_ERROR:
