@@ -22,9 +22,6 @@ int main(int argc, char** argv) {
 //---------------------------------------------------------------------------------
 
     VIDEO_Init();
-    WPAD_Init();
-    initNetwork();
-    NAND_Init();
 
     rmode = VIDEO_GetPreferredMode(NULL);
     xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
@@ -50,7 +47,12 @@ int main(int argc, char** argv) {
         printf("  Compiled on %s at %s\n", __DATE__ , __TIME__);
 	printf(":---------------------------------------------------------:\n\n");
 
-	printf("Running...\n");
+	printf("Initializing... ");
+    WPAD_Init();
+    initNetwork();
+	NAND_Init();
+		printf("OK!\n");
+	
 
     if (isDolphin()) {
         printf("\n:---------------------------------------------------------------:\n"
