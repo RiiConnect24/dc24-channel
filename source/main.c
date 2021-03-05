@@ -82,11 +82,11 @@ int main(int argc, char** argv) {
         printf("%016llu\n", friendCode);
     } else if (error == -128) {
 		printf("We're probably performing maintenance or having some issues. Hang tight!\n\nMake sure to check the status page that is linked above for more info.\n\n");
-		printf("\nContact info:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
+		printf("\nContact info:\n- Discord: https://discord.gg/rc24\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
 		printf("\nPress the HOME Button to exit.");
 	} else if (error != 0) {
         printf("There was an error while patching.\nPlease make a screenshot of this error message and send it\nto a developer.\n");
-        printf("\nPlease contact us using:\n- Discord: https://discord.gg/b4Y7jfD\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
+        printf("\nPlease contact us using:\n- Discord: https://discord.gg/rc24\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
         printf("\nAlso, please send us your Wii Number: w");
         printf("%016llu\n", friendCode);
     } else {
