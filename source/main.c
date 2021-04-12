@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         printf("%016llu\n", friendCode);
 	printf("\nPress the HOME Button to exit.\n");
     } else {
-        printf("All done, all done! Thank you for installing RiiConnect24.");
+        printf("All done, all done! Thank you for installing RiiConnect24.\n");
         printf("\nPress the HOME Button to exit.\n");
     }
 
