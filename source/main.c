@@ -79,11 +79,12 @@ int main(int argc, char** argv) {
     if (error == RESPONSE_AREGISTERED) {
         printf("You have already patched your Wii to use Wii Mail.\n");
 	printf("In most cases, there is no need to run this patcher again.\n");
-	printf("If you're having any sorts of problems, reinstalling RiiConnect24\n");
-	printf("is unnecessary and unlikely to fix issues.\n");
+	printf("If you're having any sorts of problems, reinstalling RiiConnect24 is unnecessary\n");
+	printf("and unlikely to fix issues.\n");
 	printf("If you still need to have your Wii Number removed, please contact us.\n");
 	printf("\nContact info:\n- Discord: https://discord.gg/rc24\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
-        printf("\nWhen contacting, please provide a brief explanation of the issue, and include your Wii Number: w");
+        printf("\nWhen contacting, please provide a brief explanation of the issue, and");
+	printf("\ninclude your Wii Number: w");
         printf("%016llu\n", friendCode);
 	printf("\nPress the HOME Button to exit.\n");
     } else if (error == -128) {
@@ -93,7 +94,8 @@ int main(int argc, char** argv) {
     } else if (error != 0) {
         printf("There was an error while patching.\nPlease make a screenshot of this error message and contact us.\n");
         printf("\nPlease contact us using:\n- Discord: https://discord.gg/rc24\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
-        printf("\nWhen contacting, please provide a brief explanation of the issue, and include your Wii Number: w");
+        printf("\nWhen contacting, please provide a brief explanation of the issue, and");
+	printf("\ninclude your Wii Number: w");
         printf("%016llu\n", friendCode);
 	printf("\nPress the HOME Button to exit.\n");
     } else {
