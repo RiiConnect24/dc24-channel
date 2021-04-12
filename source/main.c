@@ -33,9 +33,9 @@ int main(int argc, char** argv) {
     VIDEO_WaitVSync();
     if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
-		char version_major = 1;
-		char version_minor = 3;
-        char version_patch = 2;
+	char version_major = 1;
+	char version_minor = 3;
+        char version_patch = 3;
 
 	printf("\n:---------------------------------------------------------:\n");
 	printf("  RiiConnect24 Mail Patcher - (C) RiiConnect24 ");
