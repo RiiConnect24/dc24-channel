@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         printf("%016llu\n", friendCode);
 	printf("\nPress the HOME Button to exit.\n");
     } else if (error == -128) {
-	printf("We're probably performing maintenance or having some issues. Hang tight!\n\nMake sure to check the status page that is linked above for more info.\n\n");
+	printf("We're probably performing maintenance or having some issues. Hang tight!\n\nMake sure to check https://status.rc24.xyz/ for more info.\n\n");
 	printf("\nContact info:\n- Discord: https://discord.gg/rc24\n		Wait time: Short, send a Direct Message to a developer.\n- E-Mail: support@riiconnect24.net\n		Wait time: up to 24 hours, sometimes longer\n");
 	printf("\nPress the HOME Button to exit.\n");
     } else if (error != 0) {
